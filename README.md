@@ -439,8 +439,8 @@ $$
 Code:
 ```matlab
 % A and B components used in Projection Matrix
-A_comp = -(near+far)/(near-far)*(-1);
-B_comp = 2*near*far/(near-far)*(-1);
+A_comp = (far)/(far-near);
+B_comp = near*far/(far-near)*(-1);
 
 % NDC mapped to frustum - near plane
 w_n_prime = z_n + A_comp;
