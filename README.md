@@ -536,5 +536,14 @@ We expect that:
 Where did it go wrong?
 
 
+## Where did it go wrong?
 
+1. The depth value is scaled here
 
+	https://github.com/facebookresearch/habitat-sim/blob/main/examples/demo_runner.py#L73
+
+	Maybe I need some extra steps?
+
+2. Projection matrix may be wrong?
+
+3. 
