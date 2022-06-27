@@ -89,8 +89,10 @@ t = s_y/2;
 ```
 
 ## Extrinsics
-Code to parse habitat output log to csv: [[parse output to csv]]
+Code to parse habitat output log to csv: [Parse output to csv](['Parse output to csv.md'](https://github.com/havocado/3d-reconstruction/blob/hailey/init/Parse%20output%20to%20csv.md))
+
 (nothing special with this code, just reading habitat output and parsing into csv file)
+
 Outputs 3 values for location and 4 values for rotation quaternion.
 
 #### Modifying camera location
