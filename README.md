@@ -22,7 +22,7 @@ Code:
 % 1 <= i <= w, 1 <= j <= h, 0 <= im(j, i) <= 1.0
 x_n(count) = (i - w/2) / w;
 y_n(count) = ((-1)*j + h/2)/h;
-z_n(count) = (-1)*(im(j, i));
+z_n(count) = im(j, i);
 ```
 
 #### Downsampling & Stepsize
@@ -39,7 +39,7 @@ for i=1:stepSize:w
 		count = count + 1;
 		x_n(count) = (i - w/2)/w;
 		y_n(count) = ((-1)*j + h/2)/h;
-		z_n(count) = (-1)*(im(j, i));
+		z_n(count) = im(j, i);
 	end
 end
 NDC = [x_n; y_n; z_n];
@@ -457,6 +457,82 @@ projMat = [(near/r), 0,0,0; ...
 	0,0,1,0];
 
 cameraSpaceCoords = projMat\planeProj;
-
 ```
+
+
+## Reverting rotation & translation
+#### Building rotation matrix
+Rotation matrix can be obtained by matlab's built in rotmat function
+Code:
+```matlab
+% Revert rotation
+% building rotation matrix
+quatVector = quatnormalize(quat);
+imquat = quaternion(quatVector);
+rotationMat = rotmat(imquat, 'point'); % 3x3
+rotationMat = [rotationMat, zeros(3,1); zeros(1,3), 1]; % 4x4
+
+% get coord before rotation
+beforeRotCoords = rotationMat\cameraSpaceCoords;
+```
+
+#### Building translation matrix
+Code:
+```matlab
+% Revert translation
+moveMat = eye(4);
+moveMat(1, 4) = cameraPos(1);
+moveMat(2, 4) = cameraPos(2);
+moveMat(3, 4) = cameraPos(3);
+
+% get coord before translation
+beforeMove = moveMat\beforeRotCoords;
+```
+
+And finally converting homogeneous coord to cartesian coord
+```matlab
+result = hom2cart(beforeMove')';
+```
+
+We can complete the image -> points function.
+
+## Plotting
+Combing all resulting points into 1 array:
+```
+<loop>
+	results = % Call image2points function
+		
+	% Concatenate results into 1 big 3*n array
+	all_points = [all_points points];
+```
+
+Plotting coords in World coord: Matlab uses y direction up:
+
+```matlab
+scatter3(all_points(1,:), all_points(3,:), all_points(2,:), '.b');
+xlabel('x'); ylabel('z'); zlabel('y');
+```
+
+In builder.m, we produce 4 plots
+- Plot 1) All sample points
+- Plot 2) Depth image of choice
+- Plot 3) Corresponding samples in world coord
+- Plot 4) Corresponding samples in camera coord
+
+We expect that:
+1) Plot 1 will be point cloud of samples in world coord, reconstructing the whole sample scene.
+2) Plot 3 will be the reconstruction of Plot 2
+3) Plot 4 will be the reconstruction of Plot 2, but in camera space.
+
+## Result
+
+[<img src="https://user-images.githubusercontent.com/47484587/175873574-06a24fb8-7b67-4ba8-a4e4-7084d66e870c.png" width="350"/>]()
+[<img src="https://user-images.githubusercontent.com/47484587/175873572-d45c4d08-9a8c-473c-9ba7-67ddfd1e9298.png" width="350"/>]()
+[<img src="https://user-images.githubusercontent.com/47484587/175873567-c043be98-1c33-4c98-bb0f-4f449b8ee372.png" width="350"/>]()
+[<img src="https://user-images.githubusercontent.com/47484587/175873561-20f8529d-aa5a-4115-a787-9c15742cc6e9.png" width="350"/>]()
+
+Where did it go wrong??
+
+
+
 
