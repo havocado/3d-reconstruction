@@ -1,7 +1,7 @@
 # 3d-reconstruction
 # Intrinsics & Extrinsics
 ## Samples -> NDC coord
-![[Pasted image 20220505134718.png | 400]]
+![A grayscale depth image displaying a scene produced by habitat simulator](img/readme_1.png)
 
 Samples from habitat are obtained as images: (row j, col i, depth)
 
@@ -66,7 +66,7 @@ screen x-length : $sx =  2 \cdot near \cdot tan(\large\frac{hfov}{2})$
 
 screen y-length: $sy = sx \cdot \large\frac{resolution_x}{resolution_y}$ where resolution: width, height.
 
-![[Pasted image 20220510163816.png | 480]]
+![Derivation of formula above, written on paper](img/readme_2.png)
 
 ```MATLAB
 width = 640; height = 480;
@@ -105,7 +105,7 @@ Habitat output:
 
 #### Modifying quaternion
 
-![[Pasted image 20220606155857.png | 600]]
+![2 plots drawn on paper demonstration conversion from habitat quaternion to our quaternion](img/readme_3.png)
 
 Hence
 ```matlab
