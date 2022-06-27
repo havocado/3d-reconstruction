@@ -112,3 +112,351 @@ modifiedCameraPos = [extrinsics(i,3); extrinsics(i,2); extrinsics(i,1)]';
 modifiedQuaternion = [extrinsics(i,4); (-1)*extrinsics(i,7); extrinsics(i,6); (-1)*extrinsics(i,5)]';
 ```
 
+# Unprojection
+#### Unprojection input
+near, far, top, right
+samples
+- x: right, y: up, z: towards screen, camera placed at (0,0,0)
+ 
+#### Unprojection output (goal)
+x, y, z in camera coord.
+- x: Camera right, y: Camera up, z: Camera front direction, camera placed at (0,0,0)
+
+#### Formulation
+Define coordinates in Camera and NDC:
+
+$$Output = Camera: \begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c 
+\end{bmatrix}
+, \ \ Input = NDC: 
+\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}$$ 
+
+Here Camera is located at the origin for both coordinates, z_c > 0.
+For NDC, $x_n, y_n \in [-1, 1] , z_n \in [0, 1]$ where x points right, y points up, and z points toward the screen. (Left-handed coord system)
+
+##### Camera -> NDC direction
+Let's define a homogeneous coord version of NDC:
+
+$$\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}
+\equiv
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} 
+= ProjMat \cdot
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix}
+\ , \ \ w_n' = z_c$$
+
+where $\equiv$ 
+represents equivalence in homogeneous coordinates and $=$ represents element-wise equality of vectors. Reason for choice of $w_n'$ is in the construction of ProjMat.
+
+##### Perspective Projection on near Plane
+As a step for constructing ProjMat
+Let's define Proj on near plane: homog coord equivalent to NDC where z_p is equal to n (z_p = n > 0).
+
+By drawing triangles
+
+![[Pasted image 20220605225754.png]]
+
+we get the relation
+
+$$\begin{bmatrix} 
+x_p \\ 
+y_p \\ 
+z_p \\ 
+w_p
+\end{bmatrix} =
+\begin{bmatrix} 
+x_c \cdot (\frac{n}{z_c}) \\ 
+y_c \cdot (\frac{n}{z_c}) \\ 
+n \\ 
+(\frac{n}{z_c})
+\end{bmatrix} =
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 1
+\end{bmatrix} \cdot (\frac{n}{z_c})
+\ \ \ \ \ \ \ \ \ \ \ \ (1)$$
+
+(Note that z_c varies for each points)
+
+
+Since we chose $x_n, y_n \in [-1, 1] , z_n \in [0, 1]$, we need a proper projection matrix.
+
+![[Pasted image 20220605223710.png]]
+
+we get the relation
+
+$$
+x_n = \frac{1}{r} \cdot x_p \ , \ \ \ y_n = \frac{1}{t} \cdot y_p
+\ \ \ \ \ \ \ \ \ \ \ \ (2)
+$$
+
+Substituting (1) for (2), we get
+
+$$
+x_n = \frac{1}{r} \cdot (\frac{n}{z_c}) \cdot x_c \ , \ \ \ 
+y_n = \frac{1}{r} \cdot (\frac{n}{z_c}) \cdot y_c
+\ \ \ \ \ \ \ \ \ \ \ \ (3)
+$$
+
+We need a way to divide x_n and y_n by z_c, so we decide to use homogeneous coordinates and set the w_n' term equal to z_c.
+The resulting projection matrix would be:
+
+
+$$
+\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}
+\equiv
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} = 
+\begin{bmatrix}
+\frac{n}{r} & 0 & 0 & 0 \\
+0 & \frac{n}{t} & 0 & 0 \\
+? & ? & ? & ? \\
+0 & 0 & 1 & 0
+\end{bmatrix}
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix}
+\ , \ \ w_n' = z_c
+$$
+
+z_n' term: We know that z_n' doesn't depend on x_c or y_c, so we can set the corresponding elements in the matrix to 0.
+
+$$
+\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}
+\equiv
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} = 
+\begin{bmatrix}
+\frac{n}{r} & 0 & 0 & 0 \\
+0 & \frac{n}{t} & 0 & 0 \\
+0 & 0 & A & B \\
+0 & 0 & 1 & 0
+\end{bmatrix}
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix}
+$$
+
+Solving for A and B:
+By projection matrix,
+
+$$
+z_n = \frac{z_n'}{w_n'} = \frac{A \cdot z_c + B}{z_c}
+$$
+
+As we decide to map $z_c \in [n, f]$ to $z_n \in [0, 1]$ linearly, we can obtain the relation as
+
+$$
+0 = \frac{A \cdot n + B}{n} \ , \ \ 1 = \frac{A \cdot f + B}{f}
+$$
+
+Gives us the result
+
+$$
+A = \frac{f}{f-n} \ , \ \ B = -\frac{nf}{f-n}
+$$
+
+So we can complete the projection matrix
+
+$$
+\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}
+\equiv
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} = 
+\begin{bmatrix}
+\frac{n}{r} & 0 & 0 & 0 \\
+0 & \frac{n}{t} & 0 & 0 \\
+0 & 0 & \frac{f}{f-n} & -\frac{nf}{f-n} \\
+0 & 0 & 1 & 0
+\end{bmatrix}
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix}
+$$
+
+##### NDC to Camera reconstruction
+
+Since our goal is to obtain the camera coordinates from NDC, we have to go the opposite direction.
+
+However 
+
+$$
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} =
+\begin{bmatrix} 
+x_n w_n \\ 
+y_n w_n \\ 
+z_n w_n \\  
+w_n 
+\end{bmatrix} \ , \ \
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix} = inv(\begin{bmatrix}
+\frac{n}{r} & 0 & 0 & 0 \\
+0 & \frac{n}{t} & 0 & 0 \\
+0 & 0 & \frac{f}{f-n} & -\frac{nf}{f-n} \\
+0 & 0 & 1 & 0
+\end{bmatrix})
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix}
+$$
+
+is impossible from the first step because we don't know w_n'.
+In order to get z_c we need w_n', but we need z_c to get w_n'.
+
+This can be solved by using the relationship
+
+$$
+z_n = \frac{A \cdot z_c + B}{z_c}
+$$
+
+and bringing z_c to LHS gives
+
+$$
+z_c = \frac{B}{z_n + A} = \frac{-\frac{nf}{f-n}}{z_n + \frac{f}{f-n}}
+$$
+
+which the RHS is fully known.
+
+##### Conclusion
+
+Using
+
+$$
+Output = Camera: 
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c 
+\end{bmatrix}
+, \ \ Input = NDC: 
+\begin{bmatrix} 
+x_n \\ 
+y_n \\ 
+z_n 
+\end{bmatrix}
+$$
+
+Calculate in order:
+
+$$
+w_n' = \frac{-\frac{nf}{f-n}}{z_n + \frac{f}{f-n}} \ , \ \ 
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix} =
+\begin{bmatrix} 
+x_n w_n \\ 
+y_n w_n \\ 
+z_n w_n \\  
+w_n 
+\end{bmatrix} \ , \ \
+\begin{bmatrix} 
+x_c \\ 
+y_c \\ 
+z_c \\ 
+1
+\end{bmatrix} = inv(\begin{bmatrix}
+\frac{n}{r} & 0 & 0 & 0 \\
+0 & \frac{n}{t} & 0 & 0 \\
+0 & 0 & \frac{f}{f-n} & -\frac{nf}{f-n} \\
+0 & 0 & 1 & 0
+\end{bmatrix})
+\begin{bmatrix} 
+x_n' \\ 
+y_n' \\ 
+z_n' \\ 
+w_n'
+\end{bmatrix}
+$$
+
+Code:
+```matlab
+% A and B components used in Projection Matrix
+A_comp = -(near+far)/(near-far)*(-1);
+B_comp = 2*near*far/(near-far)*(-1);
+
+% NDC mapped to frustum - near plane
+w_n_prime = z_n + A_comp;
+w_n_prime = 1./w_n_prime;
+w_n_prime = w_n_prime * B_comp;
+
+% 2. Plane coordinates
+planeProj = [x_n.*w_n_prime; y_n.*w_n_prime; z_n.*w_n_prime; w_n_prime];
+
+% Inverse projection
+projMat = [(near/r), 0,0,0; ...
+	0, (near/t), 0,0; ...
+	0,0, A_comp, B_comp; ...
+	0,0,1,0];
+
+cameraSpaceCoords = projMat\planeProj;
+
+```
+
