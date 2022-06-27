@@ -1,6 +1,6 @@
 # 3d-reconstruction
 ## Samples -> NDC coord
-![A grayscale depth image displaying a scene produced by habitat simulator](img/readme_1.png)
+[<img src="img/readme_1.png" width="400"/>]()
 
 Samples from habitat are obtained as images: (row j, col i, depth)
 
@@ -65,7 +65,7 @@ screen x-length : $sx =  2 \cdot near \cdot tan(\large\frac{hfov}{2})$
 
 screen y-length: $sy = sx \cdot \large\frac{resolution_x}{resolution_y}$ where resolution: width, height.
 
-![Derivation of formula above, written on paper](img/readme_2.png)
+[<img src="img/readme_2.png" width="400"/>]()
 
 ```MATLAB
 width = 640; height = 480;
@@ -104,7 +104,7 @@ Habitat output:
 
 #### Modifying quaternion
 
-![2 plots drawn on paper demonstration conversion from habitat quaternion to our quaternion](img/readme_3.png)
+[<img src="img/readme_3.png" width="400"/>]()
 
 Hence
 ```matlab
@@ -173,7 +173,7 @@ Let's define Proj on near plane: homog coord equivalent to NDC where z_p is equa
 
 By drawing triangles
 
-![[Pasted image 20220605225754.png]]
+[<img src="img/readme_4.png" width="400"/>]()
 
 we get the relation
 
@@ -201,7 +201,7 @@ z_c \\ 1
 
 Since we chose $x_n, y_n \in [-1, 1] , z_n \in [0, 1]$, we need a proper projection matrix.
 
-![[Pasted image 20220605223710.png]]
+[<img src="img/readme_5.png" width="400"/>]()
 
 we get the relation
 
