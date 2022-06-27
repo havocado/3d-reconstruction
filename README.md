@@ -1,5 +1,4 @@
 # 3d-reconstruction
-# Intrinsics & Extrinsics
 ## Samples -> NDC coord
 ![A grayscale depth image displaying a scene produced by habitat simulator](img/readme_1.png)
 
@@ -26,7 +25,7 @@ y_n(count) = ((-1)*j + h/2)/h;
 z_n(count) = (-1)*(im(j, i));
 ```
 
-## Downsampling & Stepsize
+#### Downsampling & Stepsize
 For fast computation the images are downsampled:
 ```
 % Downsampling using stepSize parameter
@@ -89,13 +88,11 @@ r = s_x/2;
 t = s_y/2;
 ```
 
-
 ## Extrinsics
 Code to parse habitat output log to csv: [[parse output to csv]]
 (nothing special with this code, just reading habitat output and parsing into csv file)
 Outputs 3 values for location and 4 values for rotation quaternion.
 
-## Rotation & Quaternion
 #### Modifying camera location
 Our code: 
 - x: right, y: up, z: towards screen
