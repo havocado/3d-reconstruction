@@ -1,4 +1,4 @@
-> Note: Since I don't have a local setup on my Windows laptop, the code is only tested on online version of MATLAB and some links might be broken while moving to this repo. I will test the code locally tomorrow using linux.
+> Currently working on migrating to Python!
 
 ## How to run
 Run 
@@ -17,8 +17,6 @@ And input files:
 
 Data files not used in code, but is uploaded to repo:
 - `testOutput.txt` : Contains habitat output
-
-> Reason for choice of language: Matlab makes it easy to work with matrices, and has some built in functions such as quaternion->rotation matrix that are used in this code. For Python it should be possible to implement the same thing, but I will need some time to learn Python libraries for Linear algebra.
 
 ---
 
